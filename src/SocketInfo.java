@@ -1,29 +1,43 @@
 
 public class SocketInfo {
-	
-	private String ipAddr;
+
+	private String name;
+	private String ip;
 	private int port;
 	
-	public SocketInfo(String ip, int port) {
-		this.ipAddr = ip;
+	public SocketInfo(String name, String ip, int port) {
+		this.name = name;
+		this.ip = ip;
 		this.port = port;
 	}
-	public String getIpAddr() {
-		return ipAddr;
+	
+	public String getName() {
+		return name;
 	}
-	public void setIpAddr(String ipAddr) {
-		this.ipAddr = ipAddr;
+
+	public void setName(String name) {
+		this.name = name;
 	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
 	public int getPort() {
 		return port;
 	}
+
 	public void setPort(int port) {
 		this.port = port;
 	}
 	
 	@Override
 	public String toString() {
-		return "SocketInfo [ipAddr=" + ipAddr + ", port=" + port + "]";
+		return "SocketInfo [name=" + name + ", ip=" + ip + ", port=" + port
+				+ "]";
 	}
-	
 }
