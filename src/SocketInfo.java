@@ -3,7 +3,11 @@ public class SocketInfo {
 
 	private String name;
 	private String ip;
-	private int port;
+	int port;
+	
+	public SocketInfo() {
+		
+	}
 	
 	public SocketInfo(String name, String ip, int port) {
 		this.name = name;
