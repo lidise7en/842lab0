@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
 import java.util.Queue;
@@ -12,8 +14,9 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 public class MessagePasser {
 	
-	private Queue<Message> sendQueue;
-	private Queue<Message> recvQueue;
+	private Queue<Message> delaySendQueue;//store the delayed send msg
+	private Queue<Message> delayRecvQueue;//store the delayed recv msg
+	private Queue<Message> recvQueue;//store all the received msg from all receive sockets
 	private Map<SocketInfo, Socket> sockets;
 	private String configFilename;
 	private String localName;
@@ -24,6 +27,42 @@ public class MessagePasser {
 	private enum ruleType {
 		SEND,
 		RECEIVE,
+	}
+	/*
+	 * sub-class for listen threads
+	 */
+	public class ListenThread implements Runnable {
+		Socket sock;
+		
+		public ListenThread(Socket sock) {
+			this.sock = sock;
+		}
+		public void run() {
+			while(true) {
+				ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
+				Message msg = (Message)in.readObject();
+				if(checkRecvRule(msg)) {
+					if(msg.getKind().equals("drop")) {
+						
+					}
+					else if(msg.getKind().equals("duplicate")) {
+						
+					}
+					else if(msg.getKind().equals("delay")) {
+						
+					}
+					else {
+						System.out.println("We receive a wierd msg!");
+					}
+				}
+				else {
+					synchronized(recvQueue) {
+						recvQueue.add(msg);
+					}
+				}
+				in.close();
+			}
+		}
 	}
 	
 	public MessagePasser(String configuration_filename, String local_name) {
@@ -51,10 +90,12 @@ public class MessagePasser {
 		else {
 			/* Set up socket */
 			System.out.println("For this host: " + hostSocketInfo.toString());
+			/*start the listen thread */
+			startListen();
 		}
 	}
 	
-	void send(Message message) {
+	public void send(Message message) {
 		/* Re-parse the config.
 		 * Check message against sendRules.
 		 * Finally, send the message using sockets.
@@ -71,9 +112,28 @@ public class MessagePasser {
 		for(Rule r : config.getSendRules()) {
 			System.out.println(r.toString());
 		}
+		
+		if(checkSendRule(message)) {
+			if(message.getKind().equals("drop")) {
+				
+			}
+			else if(message.getKind().equals("duplicate")) {
+				
+			}
+			else if(message.getKind().equals("delay")) {
+				
+			}
+			else {
+				System.out.println("We get a wierd message here!");
+			}
+		}
+		else {
+			
+		}
+		
 	}
 	
-	Message receive() {
+	public Message receive() {
 		/* Re-parse the config.
 		 * Receive the message using sockets.
 		 * Finally, check message against receiveRules.
@@ -90,10 +150,38 @@ public class MessagePasser {
 		for(Rule r : config.getReceiveRules()) {
 			System.out.println(r.toString());
 		}
-		
+		/*
+		 * TODO: You have to make some logic according to the type of msg
+		 */
+		synchronized(recvQueue) {
+			if(!recvQueue.isEmpty())
+				return recvQueue.remove();
+		}
 		return null;
 	}
 	
+	public void startListen() {
+		ServerSocket ListenSocket = new ServerSocket(this.hostSocketInfo.port);
+		while(true) {
+			Socket sock = ListenSocket.accept();
+			new Thread(new ListenThread(sock)).start();
+			
+		}
+	}
+	public boolean checkSendRule(Message messsage) {
+		//TODO
+		/*
+		 * check whether this message matches the send rules
+		 */
+		return false;
+	}
+	
+	public boolean checkRecvRule(Message message) {
+		/*
+		 * check whether this message matches the receive rules
+		 */
+		return false;
+	}
 	private void parseConfig() throws FileNotFoundException {
 		//Need to add snakeYAML code for parsing the config.
 		//Create a hostSocketInfo object.
