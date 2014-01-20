@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
@@ -40,8 +41,20 @@ public class MessagePasser {
 		}
 		public void run() {
 			while(true) {
-				ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
-				Message msg = (Message)in.readObject();
+				ObjectInputStream in = null;
+				try {
+					in = new ObjectInputStream(sock.getInputStream());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				Message msg = null;
+				try {
+					msg = (Message)in.readObject();
+				} catch (ClassNotFoundException | IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				if(msg.isDuplicate())
 					continue;
 				if(checkRecvRule(msg)) {
@@ -68,7 +81,12 @@ public class MessagePasser {
 						recvQueue.add(msg);
 					}
 				}
-				in.close();
+				try {
+					in.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -99,7 +117,12 @@ public class MessagePasser {
 			/* Set up socket */
 			System.out.println("For this host: " + hostSocketInfo.toString());
 			/*start the listen thread */
-			startListen();
+			try {
+				startListen();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -179,7 +202,7 @@ public class MessagePasser {
 		return result;
 	}
 	
-	public void startListen() {
+	public void startListen() throws IOException {
 		ServerSocket ListenSocket = new ServerSocket(this.hostSocketInfo.port);
 		while(true) {
 			Socket sock = ListenSocket.accept();
