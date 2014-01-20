@@ -45,9 +45,13 @@ public class MessagePasser {
 		hostSocketInfo = config.getConfigSockInfo(localName);
 		if(hostSocketInfo == null) {
 			/*** ERROR ***/
+			System.out.println("The local name is not correct.");
+			System.exit(0);
 		}
-		/* Set up socket */
-		System.out.println("For this host: " + hostSocketInfo.toString());
+		else {
+			/* Set up socket */
+			System.out.println("For this host: " + hostSocketInfo.toString());
+		}
 	}
 	
 	void send(Message message) {
