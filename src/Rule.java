@@ -1,11 +1,11 @@
 
 public class Rule {
-	String action;
-	String src;
-	String dest;
-	String kind;
-	int seqNum;
-	String duplicate;
+	private String action;
+	private String src;
+	private String dest;
+	private String kind;
+	private int seqNum;
+	private String duplicate;
 	
 	public Rule() {
 		action = "";

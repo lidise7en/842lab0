@@ -3,7 +3,7 @@ import java.io.Serializable;
 
 public class Message implements Serializable {
 
-
+	private String src;
 	private String dest;
 	private String kind;
 	private Object data;
@@ -16,9 +16,10 @@ public class Message implements Serializable {
 		this.data = data;
 		this.duplicate = false;
 	}
+
 	// These settors are used by MessagePasser.send, not your app
 	public void set_source(String source) {
-		this.dest = source;
+		this.src = source;
 	}
 	public void set_seqNum(int sequenceNumber) {
 		this.seqNum = sequenceNumber;
@@ -42,6 +43,9 @@ public class Message implements Serializable {
 	}
 	public int getSeqNum() {
 		return seqNum;
+	}
+	public String getSrc() {
+		return src;
 	}
 	@Override
 	public String toString() {
