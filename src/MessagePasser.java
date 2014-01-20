@@ -221,11 +221,7 @@ public class MessagePasser {
 		}
 		return result;
 	}
-	
-	public void startListen() throws IOException {
-		
-	}
-	
+
 	public Rule matchRule(Message message, RuleType type) {
 		List<Rule> rules = null;
 		boolean found = false;
