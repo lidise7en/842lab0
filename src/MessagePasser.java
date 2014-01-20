@@ -4,9 +4,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -17,17 +21,19 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 public class MessagePasser {
 	
-	private Queue<Message> delaySendQueue;//store the delayed send msg
-	private Queue<Message> delayRecvQueue;//store the delayed recv msg
-	private Queue<Message> recvQueue;//store all the received msg from all receive sockets
-	private Map<SocketInfo, Socket> sockets;
+	private Queue<Message> delaySendQueue = new LinkedList<Message>(); //store the delayed send msg
+	private Queue<Message> delayRecvQueue = new LinkedList<Message>(); //store the delayed recv msg
+	private Queue<Message> recvQueue = new LinkedList<Message>(); //store all the received msg from all receive sockets
+	
+	private Map<SocketInfo, Socket> sockets = new HashMap<SocketInfo, Socket>();
 
 
 	private String configFilename;
 	private String localName;
-	private Socket hostSocket;
+	private ServerSocket hostListenSocket;
 	private SocketInfo hostSocketInfo;
 	private Config config;
+	private static int currSeqNum;
 	
 	private enum RuleType {
 		SEND,
@@ -98,21 +104,24 @@ public class MessagePasser {
 	public class startListen implements Runnable {
 		
 		public void run() {
-			ServerSocket ListenSocket;
+			System.out.println("Running");
 			try {
-				ListenSocket = new ServerSocket(hostSocketInfo.port);
+				hostListenSocket = new ServerSocket(hostSocketInfo.port);
 				while(true) {
-					Socket sock = ListenSocket.accept();
+					Socket sock = hostListenSocket.accept();
 					new Thread(new ListenThread(sock)).start();		
 				}
 			}catch(IOException e) {
-				e.printStackTrace();
+				Thread.currentThread().interrupt();
 			}
 		}
 	}
+
 	public MessagePasser(String configuration_filename, String local_name) {
 		configFilename = configuration_filename;
 		localName = local_name;
+		currSeqNum = 1;
+		
 		try {
 			parseConfig();
 		} catch (FileNotFoundException e) {
@@ -159,26 +168,76 @@ public class MessagePasser {
 			System.out.println(r.toString());
 		}
 		
+		message.set_source(localName);
+		message.set_seqNum(currSeqNum++);
+				
 		Rule rule = null;
 		if((rule = matchRule(message, RuleType.SEND)) != null) {
 			/* TODO - Fill this in */
 			if(rule.getAction().equals("drop")) {
-				
+				return ;
 			}
 			else if(rule.getAction().equals("duplicate")) {
+				Message dupMsg = message.makeCopy();
+				dupMsg.set_duplicate(true);
+				
+				for(Message m : delaySendQueue) {
+					doSend(m);
+				}
+				delaySendQueue.clear();
+				
+				/* Send 'message' and 'dupMsg' */
+				doSend(message);
+				doSend(dupMsg);
 				
 			}
 			else if(rule.getAction().equals("delay")) {
-				
+				delaySendQueue.add(message);
 			}
 			else {
 				System.out.println("We get a wierd message here!");
 			}
 		}
 		else {
-			
+			for(Message m : delaySendQueue) {
+				doSend(m);
+			}
+			delaySendQueue.clear();
+			doSend(message);
 		}
 		
+	}
+	
+	private void doSend(Message message) {
+		String dest = message.getDest();
+		Socket sendSock = null;
+		for(SocketInfo inf : sockets.keySet()) {
+			if(inf.getName().equals(dest)) {
+				sendSock = sockets.get(inf);
+				break;
+			}
+		}
+		if(sendSock == null) {
+			try {
+				sendSock = new Socket(dest, config.getConfigSockInfo(dest).getPort());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			sockets.put(config.getConfigSockInfo(dest), sendSock);
+		}
+		
+		ObjectOutputStream out;
+		try {
+			out = new ObjectOutputStream(sendSock.getOutputStream());
+			
+			out.writeObject(message);
+			out.flush();
+			out.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public ArrayList<Message> receive() {
@@ -301,11 +360,21 @@ public class MessagePasser {
 	    config = (Config) yaml.load(input);
 	    
 	}
+
+	public void closeAllSockets() throws IOException {
+		// TODO Auto-generated method stub
+		hostListenSocket.close();
+		
+		/*Close all other sockets in the sockets map*/
+		for (Map.Entry<SocketInfo, Socket> entry : sockets.entrySet()) {
+		    entry.getValue().close();
+		}
+	}
 	
 	@Override
 	public String toString() {
 		return "MessagePasser [configFilename=" + configFilename
-				+ ", localName=" + localName + ", hostSocket=" + hostSocket
+				+ ", localName=" + localName + ", hostListenSocket=" + hostListenSocket
 				+ ", hostSocketInfo=" + hostSocketInfo + ", config=" + config
 				+ "]";
 	}
@@ -317,4 +386,5 @@ public class MessagePasser {
 		//testPasser.send(null);
 		testPasser.receive();
 	}
+
 }

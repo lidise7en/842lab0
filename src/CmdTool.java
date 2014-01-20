@@ -28,6 +28,12 @@ public class CmdTool {
                 e.printStackTrace();
             }
             if(cmdInput.equals("quit")) {
+            	try {
+					this.msgPasser.closeAllSockets();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             	System.exit(0);
             }
             else if(cmdInput.equals("ps")) {
@@ -63,7 +69,7 @@ public class CmdTool {
 	
 
 	public static void main(String[] args) {
-		MessagePasser msgPasser = new MessagePasser("", "");
+		MessagePasser msgPasser = new MessagePasser("src/sample_config.yml", "charlie");
 		CmdTool tool = new CmdTool(msgPasser);
 		tool.executing();
 	}
