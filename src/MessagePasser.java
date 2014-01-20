@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Queue;
 
@@ -41,15 +42,22 @@ public class MessagePasser {
 			while(true) {
 				ObjectInputStream in = new ObjectInputStream(sock.getInputStream());
 				Message msg = (Message)in.readObject();
+				if(msg.isDuplicate())
+					continue;
 				if(checkRecvRule(msg)) {
 					if(msg.getKind().equals("drop")) {
-						
+						continue;
 					}
 					else if(msg.getKind().equals("duplicate")) {
-						
+						synchronized(recvQueue) {
+							recvQueue.add(msg);
+							recvQueue.add(msg.makeCopy());
+						}
 					}
 					else if(msg.getKind().equals("delay")) {
-						
+						synchronized(recvQueue) {
+							recvQueue.add(msg);
+						}
 					}
 					else {
 						System.out.println("We receive a wierd msg!");
@@ -133,12 +141,12 @@ public class MessagePasser {
 		
 	}
 	
-	public Message receive() {
+	public ArrayList<Message> receive() {
 		/* Re-parse the config.
 		 * Receive the message using sockets.
 		 * Finally, check message against receiveRules.
 		 */
-		
+		ArrayList<Message> result = new ArrayList<Message>();
 		try {
 			parseConfig();
 		} catch (FileNotFoundException e) {
@@ -154,10 +162,21 @@ public class MessagePasser {
 		 * TODO: You have to make some logic according to the type of msg
 		 */
 		synchronized(recvQueue) {
-			if(!recvQueue.isEmpty())
-				return recvQueue.remove();
+			if(!recvQueue.isEmpty()) {
+				Message popMsg = recvQueue.remove();
+				if(popMsg.getKind().equals("delay")) {
+					delayRecvQueue.add(popMsg);
+				}
+				else {
+					while(delayRecvQueue.size() != 0) {
+						result.add(delayRecvQueue.remove());
+					}
+					result.add(popMsg);
+					
+				}
+			}
 		}
-		return null;
+		return result;
 	}
 	
 	public void startListen() {

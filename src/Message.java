@@ -48,4 +48,10 @@ public class Message implements Serializable {
 		return "Message [dest=" + dest + ", kind=" + kind + ", data=" + data
 				+ ", duplicate=" + duplicate + ", seqNum=" + seqNum + "]";
 	}
+	public Message makeCopy() {
+		Message result = new Message(this.dest, this.kind, this.data);
+		result.set_duplicate(this.duplicate);
+		result.set_seqNum(this.seqNum);
+		return result;
+	}
 }
