@@ -20,6 +20,8 @@ public class MessagePasser {
 	private Queue<Message> delayRecvQueue;//store the delayed recv msg
 	private Queue<Message> recvQueue;//store all the received msg from all receive sockets
 	private Map<SocketInfo, Socket> sockets;
+
+
 	private String configFilename;
 	private String localName;
 	private Socket hostSocket;
@@ -91,6 +93,21 @@ public class MessagePasser {
 		}
 	}
 	
+	public class startListen implements Runnable {
+		
+		public void run() {
+			ServerSocket ListenSocket;
+			try {
+				ListenSocket = new ServerSocket(hostSocketInfo.port);
+				while(true) {
+					Socket sock = ListenSocket.accept();
+					new Thread(new ListenThread(sock)).start();		
+				}
+			}catch(IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	public MessagePasser(String configuration_filename, String local_name) {
 		configFilename = configuration_filename;
 		localName = local_name;
@@ -117,12 +134,8 @@ public class MessagePasser {
 			/* Set up socket */
 			System.out.println("For this host: " + hostSocketInfo.toString());
 			/*start the listen thread */
-			try {
-				startListen();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			new Thread(new startListen()).start();
+
 		}
 	}
 	
@@ -203,12 +216,7 @@ public class MessagePasser {
 	}
 	
 	public void startListen() throws IOException {
-		ServerSocket ListenSocket = new ServerSocket(this.hostSocketInfo.port);
-		while(true) {
-			Socket sock = ListenSocket.accept();
-			new Thread(new ListenThread(sock)).start();
-			
-		}
+		
 	}
 	public boolean checkSendRule(Message messsage) {
 		//TODO
@@ -234,6 +242,14 @@ public class MessagePasser {
 	    /* SnakeYAML will parse and populate the Config object for us */
 	    config = (Config) yaml.load(input);
 	    
+	}
+	
+	@Override
+	public String toString() {
+		return "MessagePasser [configFilename=" + configFilename
+				+ ", localName=" + localName + ", hostSocket=" + hostSocket
+				+ ", hostSocketInfo=" + hostSocketInfo + ", config=" + config
+				+ "]";
 	}
 	
 	// TODO - only for testing

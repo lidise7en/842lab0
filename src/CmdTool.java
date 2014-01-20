@@ -1,9 +1,17 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 
 public class CmdTool {
+	/*
+	 * Command Type:
+	 * quit: quit the whole process
+	 * ps: print the information of current MessagePasser
+	 * send command: Kind dest data duplicate SeqNum
+	 * receive command: receive
+	 */
 	private MessagePasser msgPasser;
 	public CmdTool(MessagePasser msgPasser) {
 		this.msgPasser = msgPasser;
@@ -20,18 +28,34 @@ public class CmdTool {
                 e.printStackTrace();
             }
             if(cmdInput.equals("quit")) {
-            	break;
+            	System.exit(0);
             }
             else if(cmdInput.equals("ps")) {
-            	this.msgPasser.toString();// you have to overwrite toString yourself
+            	this.msgPasser.toString();
             }
             else if (!cmdInput.equals(null) && !cmdInput.equals("\n")){
             	String[] array = cmdInput.split(" ");
-            	if(array == null || array.length != 3) {
+            	if(array == null || array.length != 1 || array.length != 5) {
             		System.out.println("Invalid Command!");
             	}
             	else {
-            		this.msgPasser.send(new Message(array[0], array[1], array[2]));
+            		if(array.length == 5)
+            			this.msgPasser.send(new Message(array[0], array[1], array[2]));
+            		else if(array[0].equals("receive")) {
+            			ArrayList<Message> msgList = this.msgPasser.receive();
+            			if(msgList.size() == 0) {
+            				System.out.println("Nothing to pass to Aplication!");
+            			}
+            			else {
+            				System.out.println("We receive");
+            				for(Message m : msgList) {
+            					System.out.println(m.toString());
+            				}
+            			}
+            		}
+            		else {
+            			System.out.println("Invalid Command!");
+            		}
             	}
             }
         }
