@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -28,7 +29,7 @@ public class MessagePasser {
 	private SocketInfo hostSocketInfo;
 	private Config config;
 	
-	private enum ruleType {
+	private enum RuleType {
 		SEND,
 		RECEIVE,
 	}
@@ -59,17 +60,18 @@ public class MessagePasser {
 				}
 				if(msg.isDuplicate())
 					continue;
-				if(checkRecvRule(msg)) {
-					if(msg.getKind().equals("drop")) {
+				Rule rule = null;
+				if((rule = matchRule(msg, RuleType.RECEIVE)) != null) {
+					if(rule.getAction().equals("drop")) {
 						continue;
 					}
-					else if(msg.getKind().equals("duplicate")) {
+					else if(rule.getAction().equals("duplicate")) {
 						synchronized(recvQueue) {
 							recvQueue.add(msg);
 							recvQueue.add(msg.makeCopy());
 						}
 					}
-					else if(msg.getKind().equals("delay")) {
+					else if(rule.getAction().equals("delay")) {
 						synchronized(recvQueue) {
 							recvQueue.add(msg);
 						}
@@ -157,14 +159,16 @@ public class MessagePasser {
 			System.out.println(r.toString());
 		}
 		
-		if(checkSendRule(message)) {
-			if(message.getKind().equals("drop")) {
+		Rule rule = null;
+		if((rule = matchRule(message, RuleType.SEND)) != null) {
+			/* TODO - Fill this in */
+			if(rule.getAction().equals("drop")) {
 				
 			}
-			else if(message.getKind().equals("duplicate")) {
+			else if(rule.getAction().equals("duplicate")) {
 				
 			}
-			else if(message.getKind().equals("delay")) {
+			else if(rule.getAction().equals("delay")) {
 				
 			}
 			else {
@@ -218,20 +222,75 @@ public class MessagePasser {
 	public void startListen() throws IOException {
 		
 	}
-	public boolean checkSendRule(Message messsage) {
-		//TODO
-		/*
-		 * check whether this message matches the send rules
-		 */
-		return false;
+	
+	public Rule matchRule(Message message, RuleType type) {
+		List<Rule> rules = null;
+		boolean found = false;
+		
+		if(type == RuleType.SEND) {
+			rules = config.getSendRules();
+		}
+		else {
+			rules = config.getReceiveRules();
+		}
+		
+		if(rules == null) {
+			return null;
+		}
+		
+		for(Rule r : rules) {
+			found = false;
+			if(!r.getSrc().isEmpty()) {
+				if(message.getSrc() == r.getSrc()) {
+					found = true;
+				}
+				else
+					continue;
+			}
+			
+			if(!r.getDest().isEmpty()) {
+				if(message.getDest() == r.getDest()) {
+					found = true;
+				}
+				else
+					continue;
+			}
+			
+			if(!r.getKind().isEmpty()) {
+				if(message.getKind() == r.getKind()) {
+					found = true;
+				}
+				else
+					continue;
+			}
+			
+			if(r.getSeqNum() != -1) {
+				if(message.getSeqNum() == r.getSeqNum()) {
+					found = true;
+				}
+				else
+					continue;
+			}
+			
+			if(!r.getDuplicate().isEmpty()) {
+				if(message.isDuplicate()) {
+					found = true;
+				}
+				else
+					continue;
+			}
+			
+			if(found == true) {
+				System.out.println("Rule matched - " + r.toString());
+				return r;
+			}
+			else {
+				return null;
+			}
+		}
+		return null;
 	}
 	
-	public boolean checkRecvRule(Message message) {
-		/*
-		 * check whether this message matches the receive rules
-		 */
-		return false;
-	}
 	private void parseConfig() throws FileNotFoundException {
 		//Need to add snakeYAML code for parsing the config.
 		//Create a hostSocketInfo object.
