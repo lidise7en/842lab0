@@ -204,8 +204,11 @@ public class MessagePasser {
 		synchronized(recvQueue) {
 			if(!recvQueue.isEmpty()) {
 				Message popMsg = recvQueue.remove();
-				if(popMsg.getKind().equals("delay")) {
-					delayRecvQueue.add(popMsg);
+				Rule rule = null;
+				if((rule = matchRule(popMsg, RuleType.RECEIVE)) != null) {
+					if(rule.getAction().equals("delay")) {
+						delayRecvQueue.add(popMsg);
+					}
 				}
 				else {
 					while(delayRecvQueue.size() != 0) {
@@ -315,7 +318,7 @@ public class MessagePasser {
 	public static void main(String[] args)
 	{
 		MessagePasser testPasser = new MessagePasser("src/sample_config.yml", "charlie");
-		testPasser.send(null);
+		//testPasser.send(null);
 		testPasser.receive();
 	}
 }
