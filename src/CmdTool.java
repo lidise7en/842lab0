@@ -39,30 +39,29 @@ public class CmdTool {
             else if(cmdInput.equals("ps")) {
             	this.msgPasser.toString();
             }
-            else if (!cmdInput.equals(null) && !cmdInput.equals("\n")){
+            else if (!cmdInput.equals(null) && !cmdInput.equals("\n")) {
             	String[] array = cmdInput.split(" ");
-            	if(array == null && !cmdInput.equals("receive") && array.length != 5) {
-            		System.out.println("Invalid Command!");
-            	}
-            	else {
-            		if(array.length == 5)
-            			this.msgPasser.send(new Message(array[0], array[1], array[2]));
-            		else if(cmdInput.equals("receive")) {
-            			ArrayList<Message> msgList = this.msgPasser.receive();
-            			if(msgList.size() == 0) {
-            				System.out.println("Nothing to pass to Aplication!");
-            			}
-            			else {
-            				System.out.println("We receive");
-            				for(Message m : msgList) {
-            					System.out.println(m.toString());
-            				}
-            			}
+            	if(array.length == 5)
+            		this.msgPasser.send(new Message(array[0], array[1], array[2]));
+            	else if(cmdInput.equals("receive")) {
+            		ArrayList<Message> msgList = this.msgPasser.receive();
+            		if(msgList.size() == 0) {
+            			System.out.println("Nothing to pass to Aplication!");
             		}
             		else {
-            			System.out.println("Invalid Command!");
+            			System.out.println("We receive");
+            			for(Message m : msgList) {
+            				System.out.println(m.toString());
+            			}
             		}
             	}
+            	else {
+            		System.out.println("Invalid Command!");
+            	}
+            	
+            }
+            else {
+            	System.out.println("Invalid Command!");
             }
         }
 	}
