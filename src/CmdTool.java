@@ -41,13 +41,13 @@ public class CmdTool {
             }
             else if (!cmdInput.equals(null) && !cmdInput.equals("\n")){
             	String[] array = cmdInput.split(" ");
-            	if(array == null || array.length != 1 || array.length != 5) {
+            	if(array == null && !cmdInput.equals("receive") && array.length != 5) {
             		System.out.println("Invalid Command!");
             	}
             	else {
             		if(array.length == 5)
             			this.msgPasser.send(new Message(array[0], array[1], array[2]));
-            		else if(array[0].equals("receive")) {
+            		else if(cmdInput.equals("receive")) {
             			ArrayList<Message> msgList = this.msgPasser.receive();
             			if(msgList.size() == 0) {
             				System.out.println("Nothing to pass to Aplication!");
