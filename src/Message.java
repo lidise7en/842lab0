@@ -50,7 +50,7 @@ public class Message implements Serializable {
 	}
 	@Override
 	public String toString() {
-		return "Message [dest=" + dest + ", kind=" + kind + ", data=" + data
+		return "Message [src=" + src + ", dest=" + dest + ", kind=" + kind + ", data=" + data
 				+ ", duplicate=" + duplicate + ", seqNum=" + seqNum + "]";
 	}
 	public Message makeCopy() {

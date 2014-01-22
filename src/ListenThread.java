@@ -40,6 +40,7 @@ if(this.LisSock.isClosed())
 							continue;
 						}
 						else if(rule.getAction().equals("duplicate")) {
+							System.out.println("Duplicating message");
 							synchronized(recvQueue) {
 								recvQueue.add(msg);
 								recvQueue.add(msg.makeCopy());
@@ -87,7 +88,7 @@ if(this.LisSock.isClosed())
 			for(Rule r : rules) {
 				found = false;
 				if(!r.getSrc().isEmpty()) {
-					if(message.getSrc() == r.getSrc()) {
+					if(message.getSrc().equals(r.getSrc())) {
 						found = true;
 					}
 					else
@@ -95,7 +96,7 @@ if(this.LisSock.isClosed())
 				}
 				
 				if(!r.getDest().isEmpty()) {
-					if(message.getDest() == r.getDest()) {
+					if(message.getDest().equals(r.getDest())) {
 						found = true;
 					}
 					else
@@ -103,7 +104,7 @@ if(this.LisSock.isClosed())
 				}
 				
 				if(!r.getKind().isEmpty()) {
-					if(message.getKind() == r.getKind()) {
+					if(message.getKind().equals(r.getKind())) {
 						found = true;
 					}
 					else

@@ -16,7 +16,7 @@ configuration :
       port : 42558   
     - name : charlie   
       ip : localhost    
-      port : 50002  
+      port : 50003  
     - name : daphnie  
       ip : localhost   
       port : 59877  
@@ -29,11 +29,14 @@ sendRules :
       seqNum : 4    
     - action : delay # Every Lookup message in the system will be delayed  
       kind : Lookup    
+    - action : delay
+      dest : alice
+      seqNum : 2
 
 receiveRules :    
     - action : duplicate
 # 3rd message from Charlie that anyone     
 # receives will be duplicated   
       src : charlie
-      seqNum : 3  
+      seqNum : 1  
 

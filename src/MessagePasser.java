@@ -117,14 +117,19 @@ public class MessagePasser {
 				Message dupMsg = message.makeCopy();
 				dupMsg.set_duplicate(true);
 				
-				for(Message m : delaySendQueue) {
-					doSend(m);
-				}
-				delaySendQueue.clear();
 				
 				/* Send 'message' and 'dupMsg' */
 				doSend(message);
 				doSend(dupMsg);
+				
+				/* We need to send delayed messages after new message.
+				 * This was clarified in Live session by Professor.
+				 */
+				for(Message m : delaySendQueue) {
+					doSend(m);
+				}
+				delaySendQueue.clear();
+
 				
 			}
 			else if(rule.getAction().equals("delay")) {
@@ -135,11 +140,15 @@ public class MessagePasser {
 			}
 		}
 		else {
+			doSend(message);
+			
+			/* We need to send delayed messages after new message.
+			 * This was clarified in Live session by Professor.
+			 */
 			for(Message m : delaySendQueue) {
 				doSend(m);
 			}
 			delaySendQueue.clear();
-			doSend(message);
 		}
 		
 	}
@@ -218,11 +227,14 @@ if(outputStreamMap.containsKey(dest))
 					}
 				}
 				else {
+					result.add(popMsg);
+					
+					/* We need to add delayed messages after new message.
+					 * This was clarified in Live session by Professor.
+					 */
 					while(delayRecvQueue.size() != 0) {
 						result.add(delayRecvQueue.remove());
 					}
-					result.add(popMsg);
-					
 				}
 			}
 		}
@@ -245,7 +257,7 @@ if(outputStreamMap.containsKey(dest))
 		}
 		
 		for(Rule r : rules) {
-			found = false;
+			found = true;
 			if(!r.getSrc().isEmpty()) {
 				if(message.getSrc() == r.getSrc()) {
 					found = true;
