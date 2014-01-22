@@ -43,8 +43,84 @@ public class MessagePasser {
 	 * sub-class for listen threads
 	 */
 	
-	
+	public class startListen extends Thread {
 
+		public startListen() {
+
+		}
+		public void run() {
+			System.out.println("Running");
+			try {
+				while(true) {
+					Socket sock = hostListenSocket.accept();
+if(sock.isClosed())
+	System.out.println("sock is closed!!!");	
+					new ListenThread(sock).start();		
+				}
+			}catch(IOException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
+	}
+
+	public class ListenThread extends Thread {
+		private Socket LisSock = null;
+
+		public ListenThread(Socket sock) {
+			this.LisSock = sock;
+		}
+		public void run() {
+
+			try {
+				ObjectInputStream in = new ObjectInputStream(this.LisSock.getInputStream());
+
+				while(true) {
+if(this.LisSock.isClosed())
+		System.out.println("sock is closed!!!!");
+				
+					Message msg = (Message)in.readObject();
+
+					if(msg.isDuplicate())
+						continue;
+					Rule rule = null;
+					if((rule = matchRule(msg, RuleType.RECEIVE)) != null) {
+						if(rule.getAction().equals("drop")) {
+							continue;
+						}
+						else if(rule.getAction().equals("duplicate")) {
+							System.out.println("Duplicating message");
+							synchronized(recvQueue) {
+								recvQueue.add(msg);
+								recvQueue.add(msg.makeCopy());
+							}
+						}
+						else if(rule.getAction().equals("delay")) {
+							synchronized(recvQueue) {
+								recvQueue.add(msg);
+							}
+						}
+						else {
+							System.out.println("We receive a wierd msg!");
+						}
+					}
+					else {
+						synchronized(recvQueue) {
+							recvQueue.add(msg);
+						}
+					}
+
+				}
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		
+	}
 
 	public MessagePasser(String configuration_filename, String local_name) {
 		configFilename = configuration_filename;
@@ -81,7 +157,7 @@ public class MessagePasser {
 				System.exit(0);
 			}
 			/*start the listen thread */
-			new startListen(this.recvQueue, this.hostSocketInfo, this.hostListenSocket, this.config).start();
+			new startListen().start();
 
 		}
 	}

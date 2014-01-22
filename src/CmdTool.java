@@ -9,7 +9,7 @@ public class CmdTool {
 	 * Command Type:
 	 * quit: quit the whole process
 	 * ps: print the information of current MessagePasser
-	 * send command: dest kind data duplicate SeqNum
+	 * send command: dest kind data
 	 * receive command: receive
 	 */
 	private MessagePasser msgPasser;
@@ -41,7 +41,7 @@ public class CmdTool {
             }
             else if (!cmdInput.equals(null) && !cmdInput.equals("\n")) {
             	String[] array = cmdInput.split(" ");
-            	if(array.length == 5)
+            	if(array.length == 3)
             		this.msgPasser.send(new Message(array[0], array[1], array[2]));
             	else if(cmdInput.equals("receive")) {
             		ArrayList<Message> msgList = this.msgPasser.receive();
