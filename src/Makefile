@@ -5,4 +5,4 @@ all:
 	cp sample_config.yml ../bin/
 	mv *.class ../bin/
 clean:
-	rm -rf ./*.class
+	rm -rf ../bin/*.class
