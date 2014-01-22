@@ -9,7 +9,7 @@ public class CmdTool {
 	 * Command Type:
 	 * quit: quit the whole process
 	 * ps: print the information of current MessagePasser
-	 * send command: Kind dest data duplicate SeqNum
+	 * send command: dest kind data duplicate SeqNum
 	 * receive command: receive
 	 */
 	private MessagePasser msgPasser;

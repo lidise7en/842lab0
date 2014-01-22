@@ -3,6 +3,7 @@ import java.io.Serializable;
 
 public class Message implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private String src;
 	private String dest;
 	private String kind;

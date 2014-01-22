@@ -24,7 +24,7 @@ public class MessagePasser {
 	private Queue<Message> delaySendQueue = new LinkedList<Message>(); //store the delayed send msg
 	private Queue<Message> delayRecvQueue = new LinkedList<Message>(); //store the delayed recv msg
 	private Queue<Message> recvQueue = new LinkedList<Message>(); //store all the received msg from all receive sockets
-	
+	private HashMap<String, ObjectOutputStream> outputStreamMap = new HashMap<String, ObjectOutputStream>();
 	private Map<SocketInfo, Socket> sockets = new HashMap<SocketInfo, Socket>();
 
 
@@ -42,80 +42,9 @@ public class MessagePasser {
 	/*
 	 * sub-class for listen threads
 	 */
-	public class ListenThread implements Runnable {
-		Socket sock;
-		
-		public ListenThread(Socket sock) {
-			this.sock = sock;
-		}
-		public void run() {
-			while(true) {
-				ObjectInputStream in = null;
-				try {
-					in = new ObjectInputStream(sock.getInputStream());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				Message msg = null;
-				try {
-					msg = (Message)in.readObject();
-				} catch (ClassNotFoundException | IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				if(msg.isDuplicate())
-					continue;
-				Rule rule = null;
-				if((rule = matchRule(msg, RuleType.RECEIVE)) != null) {
-					if(rule.getAction().equals("drop")) {
-						continue;
-					}
-					else if(rule.getAction().equals("duplicate")) {
-						synchronized(recvQueue) {
-							recvQueue.add(msg);
-							recvQueue.add(msg.makeCopy());
-						}
-					}
-					else if(rule.getAction().equals("delay")) {
-						synchronized(recvQueue) {
-							recvQueue.add(msg);
-						}
-					}
-					else {
-						System.out.println("We receive a wierd msg!");
-					}
-				}
-				else {
-					synchronized(recvQueue) {
-						recvQueue.add(msg);
-					}
-				}
-				try {
-					in.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-	}
 	
-	public class startListen implements Runnable {
-		
-		public void run() {
-			System.out.println("Running");
-			try {
-				hostListenSocket = new ServerSocket(hostSocketInfo.port);
-				while(true) {
-					Socket sock = hostListenSocket.accept();
-					new Thread(new ListenThread(sock)).start();		
-				}
-			}catch(IOException e) {
-				Thread.currentThread().interrupt();
-			}
-		}
-	}
+	
+
 
 	public MessagePasser(String configuration_filename, String local_name) {
 		configFilename = configuration_filename;
@@ -145,7 +74,7 @@ public class MessagePasser {
 			/* Set up socket */
 			System.out.println("For this host: " + hostSocketInfo.toString());
 			/*start the listen thread */
-			new Thread(new startListen()).start();
+			new startListen(this.recvQueue, this.hostSocketInfo, this.hostListenSocket, this.config).start();
 
 		}
 	}
@@ -219,21 +148,33 @@ public class MessagePasser {
 		}
 		if(sendSock == null) {
 			try {
-				sendSock = new Socket(dest, config.getConfigSockInfo(dest).getPort());
+System.out.println("destination is " + dest);
+System.out.println(config.toString());
+				sendSock = new Socket(config.getConfigSockInfo(dest).getIp(), config.getConfigSockInfo(dest).getPort());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			sockets.put(config.getConfigSockInfo(dest), sendSock);
+			try {
+				outputStreamMap.put(dest, new ObjectOutputStream(sendSock.getOutputStream()));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		ObjectOutputStream out;
 		try {
-			out = new ObjectOutputStream(sendSock.getOutputStream());
+System.out.println(config.getConfigSockInfo(dest).toString());
+System.out.println(outputStreamMap);
+if(outputStreamMap.containsKey(dest))
+	System.out.println("we find it");
+			out = outputStreamMap.get(dest);
 			
 			out.writeObject(message);
 			out.flush();
-			out.close();
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -368,6 +309,9 @@ public class MessagePasser {
 		/*Close all other sockets in the sockets map*/
 		for (Map.Entry<SocketInfo, Socket> entry : sockets.entrySet()) {
 		    entry.getValue().close();
+		}
+		for(Map.Entry<String, ObjectOutputStream> entry : outputStreamMap.entrySet()) {
+			entry.getValue().close();
 		}
 	}
 	

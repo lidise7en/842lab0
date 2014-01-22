@@ -33,7 +33,7 @@ public class Config {
 	
 	public SocketInfo getConfigSockInfo(String name) {
 		for(SocketInfo s : configuration) {
-			if(s.getName().compareTo(name) == 0) {
+			if(s.getName().equals(name)) {
 				return s;
 			}
 		}
