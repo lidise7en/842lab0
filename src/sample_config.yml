@@ -32,6 +32,9 @@ sendRules :
     - action : delay
       dest : alice
       seqNum : 2
+    - action : drop
+      dest : alice
+      seqNum : 4
 
 receiveRules :    
     - action : duplicate

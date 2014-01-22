@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +22,9 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 public class MessagePasser {
 	
-	private Queue<Message> delaySendQueue = new LinkedList<Message>(); //store the delayed send msg
-	private Queue<Message> delayRecvQueue = new LinkedList<Message>(); //store the delayed recv msg
-	private Queue<Message> recvQueue = new LinkedList<Message>(); //store all the received msg from all receive sockets
+	private LinkedList<Message> delaySendQueue = new LinkedList<Message>(); //store the delayed send msg
+	private LinkedList<Message> delayRecvQueue = new LinkedList<Message>(); //store the delayed recv msg
+	private LinkedList<Message> recvQueue = new LinkedList<Message>(); //store all the received msg from all receive sockets
 	private HashMap<String, ObjectOutputStream> outputStreamMap = new HashMap<String, ObjectOutputStream>();
 	private Map<SocketInfo, Socket> sockets = new HashMap<SocketInfo, Socket>();
 
@@ -80,11 +81,21 @@ if(this.LisSock.isClosed())
 				
 					Message msg = (Message)in.readObject();
 
-					if(msg.isDuplicate())
-						continue;
+					parseConfig();
+					
+					System.out.println("Receive Rules --");
+					for(Rule r : config.getReceiveRules()) {
+						System.out.println(r.toString());
+					}
+					
 					Rule rule = null;
 					if((rule = matchRule(msg, RuleType.RECEIVE)) != null) {
 						if(rule.getAction().equals("drop")) {
+							synchronized (delayRecvQueue) {
+								while(!delayRecvQueue.isEmpty()) {
+									recvQueue.add(delayRecvQueue.pollLast());
+								}
+							}
 							continue;
 						}
 						else if(rule.getAction().equals("duplicate")) {
@@ -92,11 +103,17 @@ if(this.LisSock.isClosed())
 							synchronized(recvQueue) {
 								recvQueue.add(msg);
 								recvQueue.add(msg.makeCopy());
+								
+								synchronized (delayRecvQueue) {
+									while(!delayRecvQueue.isEmpty()) {
+										recvQueue.add(delayRecvQueue.pollLast());
+									}
+								}
 							}
 						}
 						else if(rule.getAction().equals("delay")) {
-							synchronized(recvQueue) {
-								recvQueue.add(msg);
+							synchronized(delayRecvQueue) {
+								delayRecvQueue.add(msg);
 							}
 						}
 						else {
@@ -106,6 +123,11 @@ if(this.LisSock.isClosed())
 					else {
 						synchronized(recvQueue) {
 							recvQueue.add(msg);
+							synchronized (delayRecvQueue) {
+								while(!delayRecvQueue.isEmpty()) {
+									recvQueue.add(delayRecvQueue.pollLast());
+								}
+							}
 						}
 					}
 
@@ -273,49 +295,22 @@ if(outputStreamMap.containsKey(dest))
 		}
 	}
 	
-	public ArrayList<Message> receive() {
+	public Message receive() {
 		/* Re-parse the config.
 		 * Receive the message using sockets.
 		 * Finally, check message against receiveRules.
 		 */
-		ArrayList<Message> result = new ArrayList<Message>();
-		try {
-			parseConfig();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
-		System.out.println("Receive Rules --");
-		for(Rule r : config.getReceiveRules()) {
-			System.out.println(r.toString());
-		}
-		/*
-		 * TODO: You have to make some logic according to the type of msg
-		 */
 		synchronized(recvQueue) {
 			if(!recvQueue.isEmpty()) {
 				Message popMsg = recvQueue.remove();
-				Rule rule = null;
-				if((rule = matchRule(popMsg, RuleType.RECEIVE)) != null) {
-					if(rule.getAction().equals("delay")) {
-						delayRecvQueue.add(popMsg);
-					}
-				}
-				else {
-					result.add(popMsg);
-					
-					/* We need to add delayed messages after new message.
-					 * This was clarified in Live session by Professor.
-					 */
-					while(delayRecvQueue.size() != 0) {
-						result.add(delayRecvQueue.remove());
-					}
-				}
+				return popMsg;
 			}
 		}
-		return result;
+		
+		return null;
 	}
+				
 
 	public Rule matchRule(Message message, RuleType type) {
 		List<Rule> rules = null;
@@ -355,6 +350,7 @@ if(outputStreamMap.containsKey(dest))
 			
 			if(r.getSeqNum() != -1) {
 				if(message.getSeqNum() != r.getSeqNum()) {
+					System.out.println("Matched seq num");
 					continue;
 				}
 			}

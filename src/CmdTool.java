@@ -19,6 +19,8 @@ public class CmdTool {
 	public void executing() {
 		String cmdInput = new String();
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        Message msg = null;
+        
         while (!cmdInput.equals("quit")) {
             System.out.print("CommandLine% ");
             try {
@@ -44,15 +46,13 @@ public class CmdTool {
             	if(array.length == 3)
             		this.msgPasser.send(new Message(array[0], array[1], array[2]));
             	else if(cmdInput.equals("receive")) {
-            		ArrayList<Message> msgList = this.msgPasser.receive();
-            		if(msgList.size() == 0) {
+            		msg = this.msgPasser.receive();
+            		if(msg == null) {
             			System.out.println("Nothing to pass to Aplication!");
             		}
             		else {
             			System.out.println("We receive");
-            			for(Message m : msgList) {
-            				System.out.println(m.toString());
-            			}
+           				System.out.println(msg.toString());
             		}
             	}
             	else {
