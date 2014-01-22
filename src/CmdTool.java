@@ -37,7 +37,7 @@ public class CmdTool {
             	System.exit(0);
             }
             else if(cmdInput.equals("ps")) {
-            	this.msgPasser.toString();
+            	System.out.println(this.msgPasser.toString());
             }
             else if (!cmdInput.equals(null) && !cmdInput.equals("\n")) {
             	String[] array = cmdInput.split(" ");

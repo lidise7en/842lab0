@@ -2,6 +2,8 @@ import java.util.List;
 
 
 public class Config {
+
+
 	List<SocketInfo> configuration;
 	List<Rule> sendRules;
 	List<Rule> receiveRules;
@@ -36,5 +38,11 @@ public class Config {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public String toString() {
+		return "Config [configuration=" + configuration + ", sendRules="
+				+ sendRules + ", receiveRules=" + receiveRules + "]";
 	}
 }
