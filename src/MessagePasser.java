@@ -319,7 +319,7 @@ if(outputStreamMap.containsKey(dest))
 
 	public Rule matchRule(Message message, RuleType type) {
 		List<Rule> rules = null;
-		boolean found = false;
+		//boolean found = true;
 		
 		if(type == RuleType.SEND) {
 			rules = config.getSendRules();
@@ -333,54 +333,40 @@ if(outputStreamMap.containsKey(dest))
 		}
 		
 		for(Rule r : rules) {
-			found = true;
+			//found = true;
 			if(!r.getSrc().isEmpty()) {
-				if(message.getSrc() == r.getSrc()) {
-					found = true;
-				}
-				else
+				if(!message.getSrc().equals(r.getSrc())) {
 					continue;
+				}
 			}
 			
 			if(!r.getDest().isEmpty()) {
-				if(message.getDest() == r.getDest()) {
-					found = true;
-				}
-				else
+				if(!message.getDest().equals(r.getDest())) {
 					continue;
+				}
 			}
 			
 			if(!r.getKind().isEmpty()) {
-				if(message.getKind() == r.getKind()) {
-					found = true;
-				}
-				else
+				if(!message.getKind().equals(r.getKind())) {
 					continue;
+				}
+
 			}
 			
 			if(r.getSeqNum() != -1) {
-				if(message.getSeqNum() == r.getSeqNum()) {
-					found = true;
-				}
-				else
+				if(message.getSeqNum() != r.getSeqNum()) {
 					continue;
+				}
 			}
 			
 			if(!r.getDuplicate().isEmpty()) {
-				if(message.isDuplicate()) {
-					found = true;
-				}
-				else
+				if(!(message.isDuplicate() == true && r.getDuplicate().equals("true") || 
+						message.isDuplicate() == false && r.getDuplicate().equals("false"))) {
 					continue;
+				}
 			}
 			
-			if(found == true) {
-				System.out.println("Rule matched - " + r.toString());
-				return r;
-			}
-			else {
-				return null;
-			}
+			return r;
 		}
 		return null;
 	}
