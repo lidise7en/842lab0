@@ -73,6 +73,13 @@ public class MessagePasser {
 		else {
 			/* Set up socket */
 			System.out.println("For this host: " + hostSocketInfo.toString());
+			try {
+				hostListenSocket = new ServerSocket(hostSocketInfo.port);
+			} catch (IOException e) {
+				/*** ERROR ***/
+				System.out.println("Cannot start listen on socket. "+ e.toString());
+				System.exit(0);
+			}
 			/*start the listen thread */
 			new startListen(this.recvQueue, this.hostSocketInfo, this.hostListenSocket, this.config).start();
 

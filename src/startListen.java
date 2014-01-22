@@ -17,7 +17,7 @@ import java.util.Queue;
 		public void run() {
 			System.out.println("Running");
 			try {
-				hostListenSocket = new ServerSocket(hostSocketInfo.port);
+				//hostListenSocket = new ServerSocket(hostSocketInfo.port);
 				while(true) {
 					Socket sock = hostListenSocket.accept();
 if(sock.isClosed())
