@@ -1,6 +1,8 @@
+CLASSPATH = ../lib/snakeyaml-1.11.jar
+
 all:
-	javac -cp .:lib/snakeyaml-1.11.jar *.java
+	javac -cp .:../lib/snakeyaml-1.11.jar *.java
+	cp sample_config.yml ../bin/
+	mv *.class ../bin/
 clean:
-	find . -name *.class | xargs rm -rf >> a.out
-	find -name *.class | xargs rm -rf >> a.out
-	rm a.out
+	rm -rf ../bin/*
