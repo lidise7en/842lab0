@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ConnectException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -180,7 +181,8 @@ public class MessagePasser {
 			/* Set up socket */
 			System.out.println("For this host: " + hostSocketInfo.toString());
 			try {
-				hostListenSocket = new ServerSocket(hostSocketInfo.port);
+				hostListenSocket = new ServerSocket(hostSocketInfo.getPort(), 10, 
+						                     InetAddress.getByName(hostSocketInfo.getIp()));
 			} catch (IOException e) {
 				/*** ERROR ***/
 				System.out.println("Cannot start listen on socket. "+ e.toString());
@@ -358,7 +360,6 @@ public class MessagePasser {
 			
 			if(r.getSeqNum() != -1) {
 				if(message.getSeqNum() != r.getSeqNum()) {
-					System.out.println("Matched seq num");
 					continue;
 				}
 			}
