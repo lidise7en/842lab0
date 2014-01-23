@@ -7,18 +7,18 @@
 # The local node’s name is included in this list  
 configuration :   
     - name : alice    
-      ip: localhost   
+      ip: 127.0.0.1   
       port : 49996
 # This is the incoming port on which MP will listen 
 # May be changed for further communication as usual 
     - name : bob    
-      ip : localhost    
+      ip : 127.0.0.1    
       port : 42558   
     - name : charlie   
-      ip : localhost    
+      ip : 127.0.0.1    
       port : 50003  
     - name : daphnie  
-      ip : localhost   
+      ip : 127.0.0.1   
       port : 59877  
 
 sendRules :  

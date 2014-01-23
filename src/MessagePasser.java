@@ -134,7 +134,7 @@ public class MessagePasser {
 						   	sockets.remove(entry.getKey());
 							entry.getValue().close();
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
+							//  Auto-generated catch block
 							e.printStackTrace();
 						}
 				    	break ;
@@ -142,10 +142,10 @@ public class MessagePasser {
 				}
 				
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
+				//  Auto-generated catch block
 				e1.printStackTrace();
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
+				//  Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -161,7 +161,7 @@ public class MessagePasser {
 		try {
 			parseConfig();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			//  Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -203,7 +203,7 @@ public class MessagePasser {
 		try {
 			parseConfig();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			//  Auto-generated catch block
 			e.printStackTrace();
 		}
 		message.set_source(localName);
@@ -211,7 +211,6 @@ public class MessagePasser {
 				
 		Rule rule = null;
 		if((rule = matchRule(message, RuleType.SEND)) != null) {
-			/* TODO - Fill this in */
 			if(rule.getAction().equals("drop")) {
 				return ;
 			}
@@ -276,7 +275,7 @@ public class MessagePasser {
 				System.out.println("Connection refused to " + dest);
 				return ;
 			}catch (IOException e) {
-				// TODO Auto-generated catch block
+				//  Auto-generated catch block
 				e.printStackTrace();
 				return ;
 			}
@@ -284,7 +283,7 @@ public class MessagePasser {
 			try {
 				outputStreamMap.put(dest, new ObjectOutputStream(sendSock.getOutputStream()));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				//  Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -300,7 +299,7 @@ public class MessagePasser {
 			System.out.println("Peer " + dest + " is offline. Cannot send");
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			//  Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -389,7 +388,7 @@ public class MessagePasser {
 	}
 
 	public void closeAllSockets() throws IOException {
-		// TODO Auto-generated method stub
+		//  Auto-generated method stub
 		hostListenSocket.close();
 		
 		/*Close all other sockets in the sockets map*/
@@ -407,14 +406,6 @@ public class MessagePasser {
 				+ ", localName=" + localName + ", hostListenSocket=" + hostListenSocket
 				+ ", hostSocketInfo=" + hostSocketInfo + ", config=" + config
 				+ "]";
-	}
-	
-	// TODO - only for testing
-	public static void main(String[] args)
-	{
-		MessagePasser testPasser = new MessagePasser("src/sample_config.yml", "charlie");
-		//testPasser.send(null);
-		testPasser.receive();
 	}
 
 }
