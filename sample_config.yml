@@ -8,7 +8,7 @@
 configuration :   
     - name : alice    
       ip: localhost   
-      port : 49999
+      port : 49996
 # This is the incoming port on which MP will listen 
 # May be changed for further communication as usual 
     - name : bob    
@@ -32,11 +32,14 @@ sendRules :
     - action : delay
       dest : alice
       seqNum : 2
+    - action : drop
+      dest : alice
+      seqNum : 4
 
 receiveRules :    
     - action : duplicate
 # 3rd message from Charlie that anyone     
 # receives will be duplicated   
+      kind : test-msg
       src : charlie
-      seqNum : 1  
 

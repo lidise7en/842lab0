@@ -56,9 +56,7 @@ public class MessagePasser {
 			System.out.println("Running");
 			try {
 				while(true) {
-					Socket sock = hostListenSocket.accept();
-if(sock.isClosed())
-	System.out.println("sock is closed!!!");	
+					Socket sock = hostListenSocket.accept();	
 					new ListenThread(sock).start();		
 				}
 			}catch(IOException e) {
@@ -79,18 +77,9 @@ if(sock.isClosed())
 				ObjectInputStream in = new ObjectInputStream(this.LisSock.getInputStream());
 
 				while(true) {
-if(this.LisSock.isClosed())
-		System.out.println("sock is closed!!!!");
-				
 					Message msg = (Message)in.readObject();
 
 					parseConfig();
-					
-					System.out.println("Receive Rules --");
-					for(Rule r : config.getReceiveRules()) {
-						System.out.println(r.toString());
-					}
-					
 					Rule rule = null;
 					if((rule = matchRule(msg, RuleType.RECEIVE)) != null) {
 						if(rule.getAction().equals("drop")) {
@@ -219,12 +208,6 @@ if(this.LisSock.isClosed())
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		System.out.println("Send Rules --");
-		for(Rule r : config.getSendRules()) {
-			System.out.println(r.toString());
-		}
-		
 		message.set_source(localName);
 		message.set_seqNum(currSeqNum++);
 				
