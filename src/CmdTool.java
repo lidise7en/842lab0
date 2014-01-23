@@ -68,7 +68,7 @@ public class CmdTool {
 
 	public static void main(String[] args) {
 		
-		MessagePasser msgPasser = new MessagePasser("sample_config.yml", args[0]);
+		MessagePasser msgPasser = new MessagePasser(args[0], args[1]);
 		CmdTool tool = new CmdTool(msgPasser);
 		tool.executing();
 	}
