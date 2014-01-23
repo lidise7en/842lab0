@@ -1,7 +1,11 @@
+/* 18-842 Distributed Systems
+ * Lab 0
+ * Group 41 - ajaltade & dil1
+ */
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 
 public class CmdTool {
 	/*
@@ -67,7 +71,11 @@ public class CmdTool {
 	
 
 	public static void main(String[] args) {
-		
+		if(args.length != 2) {
+			System.out.println("Arguments mismtach.\n" +
+					"Required arguments - <Yaml config> <name of host>");
+			System.exit(0);
+		}
 		MessagePasser msgPasser = new MessagePasser(args[0], args[1]);
 		CmdTool tool = new CmdTool(msgPasser);
 		tool.executing();
