@@ -1,5 +1,9 @@
-import java.io.Serializable;
+/* 18-842 Distributed Systems
+ * Lab 0
+ * Group 41 - ajaltade & dil1
+ */
 
+import java.io.Serializable;
 
 public class Message implements Serializable {
 

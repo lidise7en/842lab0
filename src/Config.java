@@ -1,8 +1,12 @@
 import java.util.List;
 
 
-public class Config {
+/* 18-842 Distributed Systems
+ * Lab 0
+ * Group 41 - ajaltade & dil1
+ */
 
+public class Config {
 
 	List<SocketInfo> configuration;
 	List<Rule> sendRules;

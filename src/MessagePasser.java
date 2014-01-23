@@ -1,3 +1,8 @@
+/* 18-842 Distributed Systems
+ * Lab 0
+ * Group 41 - ajaltade & dil1
+ */
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
