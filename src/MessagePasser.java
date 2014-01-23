@@ -323,7 +323,6 @@ public class MessagePasser {
 
 	public Rule matchRule(Message message, RuleType type) {
 		List<Rule> rules = null;
-		//boolean found = true;
 		
 		if(type == RuleType.SEND) {
 			rules = config.getSendRules();
@@ -337,7 +336,6 @@ public class MessagePasser {
 		}
 		
 		for(Rule r : rules) {
-			//found = true;
 			if(!r.getSrc().isEmpty()) {
 				if(!message.getSrc().equals(r.getSrc())) {
 					continue;
@@ -376,8 +374,6 @@ public class MessagePasser {
 	}
 	
 	private void parseConfig() throws FileNotFoundException {
-		//Need to add snakeYAML code for parsing the config.
-		//Create a hostSocketInfo object.
 	    InputStream input = new FileInputStream(new File(configFilename));
         Constructor constructor = new Constructor(Config.class);
 	    Yaml yaml = new Yaml(constructor);
