@@ -1,3 +1,4 @@
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -5,8 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -132,6 +135,26 @@ if(this.LisSock.isClosed())
 					}
 
 				}
+			} catch (EOFException e2) {
+				System.out.println("A peer disconnected");
+				for (Map.Entry<SocketInfo, Socket> entry : sockets.entrySet()) {
+				    if(this.LisSock.getRemoteSocketAddress().equals(entry.getValue().getLocalSocketAddress())) {
+				    	System.out.println("Lost connection to " + entry.getKey().getName());
+				    	try {
+							ObjectOutputStream out = outputStreamMap.get(entry.getKey().getName());
+						   	outputStreamMap.remove(entry.getKey().getName());
+							out.close();
+	
+						   	sockets.remove(entry.getKey());
+							entry.getValue().close();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+				    	break ;
+				    }
+				}
+				
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -262,12 +285,19 @@ if(this.LisSock.isClosed())
 		}
 		if(sendSock == null) {
 			try {
-System.out.println("destination is " + dest);
-System.out.println(config.toString());
-				sendSock = new Socket(config.getConfigSockInfo(dest).getIp(), config.getConfigSockInfo(dest).getPort());
-			} catch (IOException e) {
+				SocketInfo inf = config.getConfigSockInfo(dest);
+				if(inf == null) {
+					System.out.println("Cannot find config for " + dest);
+					return ;
+				}
+				sendSock = new Socket(inf.getIp(), inf.getPort());
+			} catch(ConnectException e2) { 
+				System.out.println("Connection refused to " + dest);
+				return ;
+			}catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				return ;
 			}
 			sockets.put(config.getConfigSockInfo(dest), sendSock);
 			try {
@@ -280,14 +310,13 @@ System.out.println(config.toString());
 		
 		ObjectOutputStream out;
 		try {
-System.out.println(config.getConfigSockInfo(dest).toString());
-System.out.println(outputStreamMap);
-if(outputStreamMap.containsKey(dest))
-	System.out.println("we find it");
 			out = outputStreamMap.get(dest);
 			
 			out.writeObject(message);
 			out.flush();
+			
+		} catch (SocketException e1) {
+			System.out.println("Peer " + dest + " is offline. Cannot send");
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
