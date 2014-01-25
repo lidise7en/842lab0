@@ -6,40 +6,36 @@
 # These names will be used for src and dest addresses for the Message 
 # The local node’s name is included in this list  
 configuration :   
-    - name : alice    
-      ip: 127.0.0.1   
+    - name : p1 
+      ip: 128.237.165.220   
       port : 49996
-# This is the incoming port on which MP will listen 
-# May be changed for further communication as usual 
-    - name : bob    
-      ip : 127.0.0.1    
+    - name : p2 
+      ip : 128.237.165.220  
       port : 42558   
-    - name : charlie   
-      ip : 127.0.0.1    
+
+    - name : p3  
+      ip : 128.237.255.175    
       port : 50003  
-    - name : daphnie  
-      ip : 127.0.0.1   
+    - name : p4
+      ip : 128.237.255.175   
       port : 59877  
 
-sendRules :  
-    - action : drop # Ack message number 4 from bob to alice will not be sent  
-      src : bob   
-      dest : alice   
-      kind : Ack   
-      seqNum : 4    
-    - action : delay # Every Lookup message in the system will be delayed  
-      kind : Lookup    
+sendRules :
     - action : delay
-      dest : alice
-      seqNum : 2
-    - action : drop
-      dest : alice
-      seqNum : 4
+      dest : p4
+      kind : HTTP_REPLY
+    
+    - action : drop  
+      dest : p4
+      kind : Lookup
+
+    - action : duplicate
+      kind : Request
+      dest : p4
 
 receiveRules :    
-    - action : duplicate
-# 3rd message from Charlie that anyone     
-# receives will be duplicated   
-      kind : test-msg
-      src : charlie
+    - action : drop
+      src : p2
+      dest : p4
+      duplicate : true
 
