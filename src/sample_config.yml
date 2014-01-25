@@ -33,6 +33,10 @@ sendRules :
       kind : Request
       dest : p4
 
+    - action : duplicate
+      kind : Random
+      dest : p2
+
 receiveRules :    
     - action : drop
       src : p2
