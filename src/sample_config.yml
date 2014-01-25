@@ -43,3 +43,7 @@ receiveRules :
       dest : p4
       duplicate : true
 
+    - action : delay
+      dest : p4
+      kind : HTTP_DELAY
+
